@@ -2,7 +2,7 @@ import { Alert, StyleSheet, Text, View } from 'react-native';
 import { Camera } from 'expo-camera';
 import { useEffect, useRef, useState } from 'react';
 import * as pako from 'pako';
-import { NullableBoolean, Boolean } from '@/src/types';
+import { NullableBoolean, BuildingData } from '@/src/types';
 
 export default function TabOneScreen() {
 
@@ -10,6 +10,8 @@ export default function TabOneScreen() {
   const [scan, setScan] = useState(false);
   const [scannedCodes, setScannedCodes] = useState(new Set());
   const cameraRef = useRef(null);
+  const [buildingData, setBuildingData] = useState<BuildingData[]>([]);
+  const [part,setPart] = useState<number>(0);
 
   useEffect(() => {
     const getBarCodeScannerPermissions = async () => {
@@ -21,56 +23,10 @@ export default function TabOneScreen() {
     getBarCodeScannerPermissions();
   }, []);
 
+  useEffect(()=>{
+    console.log(buildingData)
+  },[buildingData]);
 
-  // const handleBarCodeScanned = ({ type, data }) => {
-  //   // Check if the QR code is already scanned
-  //   if (!scannedCodes.has(data)) {
-  //     //Convert the scanned data back into a byte array
-  //     const byteArray = new Uint8Array(data.length);
-  //     for (let i = 0; i < data.length; i++) {
-  //       byteArray[i] = data.charCodeAt(i);
-  //     }
-
-  //     //Try decompressing the data using pako
-  //     try {
-  //       const decompressedData = pako.inflate(byteArray, { to: 'string' });
-  //       console.log(decompressedData);
-  //       // Parse the decompressed data back into JSON
-  //       const parsedData = JSON.parse(decompressedData);
-
-  //       // Add the decompressed data to the state
-  //       const newScannedData = [...scannedData, { type, data: parsedData }];
-  //       setScannedData(newScannedData);
-
-  //       // Add the scanned QR code to the scannedCodes set
-  //       setScannedCodes(prevCodes => new Set(prevCodes.add(data)));
-
-  //       console.log('Decompressed data:', parsedData);
-
-  //       Alert.alert('QR code scanned successfully');
-  //     } catch (error) {
-  //       // Data cannot be decompressed
-  //       Alert.alert('Invalid QR code');
-  //       // Do not close the camera
-  //       console.log(error);
-  //     }
-
-
-
-  //     // try{
-  //     //   const decompressedData = pako.inflate(byteArray,{to:'string'});
-  //     //   setScannedCodes(prevCodes => new Set(prevCodes.add(data)));
-  //     //   const newDataString = dataString + decompressedData;
-  //     //   setDataString(newDataString);
-  //     //   checkForDecompressedData();
-  //     //   Alert.alert('data successfully scanned')
-  //     // }catch(err){
-  //     //   Alert.alert('there might be more qrcodes');
-  //     //   console.log(err);
-  //     // }
-  //   //}
-
-  // };
 
   const handleBarCodeScanned = ({ data, type }) => {
     if (!scannedCodes.has(data)) {
@@ -80,10 +36,15 @@ export default function TabOneScreen() {
         byteArray[i] = data.charCodeAt(i);
       }
       try {
+
         const decompressedData = pako.inflate(byteArray, { to: 'string' });
         const parsedData = JSON.parse(decompressedData);
         scannedCodes.add(data);
-        Alert.alert(`Read data part ${parsedData.part} of ${parsedData.total}`);
+        const newBuildingData:BuildingData[] = [...buildingData,parsedData.data];
+        setBuildingData(newBuildingData);
+        setPart(part+1);
+        Alert.alert(`Read data part ${part+1} of ${parsedData.total}`);
+
       } catch (error) {
         console.log(error)
         Alert.alert("Not the right QR Code");
@@ -92,6 +53,7 @@ export default function TabOneScreen() {
     else {
       Alert.alert("This data already read");
     }
+    setScan(true);
   }
 
 

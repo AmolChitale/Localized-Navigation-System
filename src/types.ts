@@ -3,7 +3,11 @@ type NullableBoolean = boolean | null;
 type Boolean = boolean;
 
 type BuildingData = {
-    roomNumber: number,
+    r_no:string,
+    f_name:string,
+    des:string,
+    flr:string,
+    ins:string
 }
 
-export{NullableBoolean,Boolean};
+export{NullableBoolean,Boolean,BuildingData};
