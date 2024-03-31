@@ -3,12 +3,25 @@ import { StyleSheet } from 'react-native';
 import EditScreenInfo from '../../components/EditScreenInfo';
 import { Text, View } from '../../components/Themed';
 
+import { useSharedData } from './_layout';
+import { useEffect } from 'react';
+
 export default function TabTwoScreen() {
+
+  const { sharedData } = useSharedData();
+
+  if (sharedData.length == 0) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.title}>
+          Please Scan a QR First
+        </Text>
+      </View>
+    )
+  }
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Tab Two</Text>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <EditScreenInfo path="app/(tabs)/two.tsx" />
+
     </View>
   );
 }

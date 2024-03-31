@@ -1,11 +1,33 @@
-import React from 'react';
+import React, { useState } from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { Link, Tabs } from 'expo-router';
-import { Pressable } from 'react-native';
-
+import { Tabs } from 'expo-router';
 import Colors from '../../constants/Colors';
 import { useColorScheme } from '../../components/useColorScheme';
 import { useClientOnlyValue } from '../../components/useClientOnlyValue';
+import { BuildingData } from '@/src/types';
+
+// creating a context to share data between screens
+
+const DataContext = React.createContext<{
+  sharedData: BuildingData[];
+  setSharedData: React.Dispatch<React.SetStateAction<BuildingData[]>>;
+  buildingName: string;
+  setBuildingName: React.Dispatch<React.SetStateAction<string>>;
+  part:number,
+  setPart:React.Dispatch<React.SetStateAction<number>>;
+  total:number,
+  setTotal:React.Dispatch<React.SetStateAction<number>>;
+}>({
+  sharedData: [],
+  setSharedData: () => { },
+  buildingName: "",
+  setBuildingName: () => { },
+  part:0,
+  setPart:()=>{},
+  total:0,
+  setTotal:()=>{},
+});
+
 
 // You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
 function TabBarIcon(props: {
@@ -16,44 +38,38 @@ function TabBarIcon(props: {
 }
 
 export default function TabLayout() {
+  
   const colorScheme = useColorScheme();
+  const [sharedData, setSharedData] = useState<BuildingData[]>([]);
+  const [buildingName,setBuildingName] = useState<string>("");
+  const [part,setPart] = useState<number>(0);
+  const [total,setTotal] = useState<number>(0);
 
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        // Disable the static render of the header on web
-        // to prevent a hydration error in React Navigation v6.
-        headerShown: useClientOnlyValue(false, true),
-      }}>
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Tab One',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
-          headerRight: () => (
-            <Link href="/modal" asChild>
-              <Pressable>
-                {({ pressed }) => (
-                  <FontAwesome
-                    name="info-circle"
-                    size={25}
-                    color={Colors[colorScheme ?? 'light'].text}
-                    style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
-                  />
-                )}
-              </Pressable>
-            </Link>
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="two"
-        options={{
-          title: 'Tab Two',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
-        }}
-      />
-    </Tabs>
+    <DataContext.Provider value={{ sharedData, setSharedData,buildingName,setBuildingName,part,setPart,total,setTotal }}>
+      <Tabs
+        screenOptions={{
+          tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+          headerShown: useClientOnlyValue(false, true),
+          unmountOnBlur: true
+        }}>
+        <Tabs.Screen
+          name="index"
+          options={{
+            title: 'Scanner',
+            tabBarIcon: ({ color }) => <TabBarIcon name="camera-retro" color={color} />
+          }}
+        />
+        <Tabs.Screen
+          name="two"
+          options={{
+            title: 'Search Place',
+            tabBarIcon: ({ color }) => <TabBarIcon name="search" color={color} />,
+          }}
+        />
+      </Tabs>
+    </DataContext.Provider>
   );
 }
+
+export const useSharedData = () => React.useContext(DataContext);

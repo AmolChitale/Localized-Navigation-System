@@ -3,14 +3,16 @@ import { Camera } from 'expo-camera';
 import { useEffect, useRef, useState } from 'react';
 import * as pako from 'pako';
 import { NullableBoolean, BuildingData } from '@/src/types';
+import { useSharedData } from './_layout';
 
 export default function TabOneScreen() {
 
+  const {sharedData,setSharedData} = useSharedData();
+  const {buildingName, setBuildingName} = useSharedData();
   const [permission, setPermission] = useState<NullableBoolean>(null);
   const [scan, setScan] = useState(false);
   const [scannedCodes, setScannedCodes] = useState(new Set());
-  const cameraRef = useRef(null);
-  const [buildingData, setBuildingData] = useState<BuildingData[]>([]);
+  const cameraRef = useRef<Camera|null>(null);
   const [part,setPart] = useState<number>(0);
 
   useEffect(() => {
@@ -23,12 +25,8 @@ export default function TabOneScreen() {
     getBarCodeScannerPermissions();
   }, []);
 
-  useEffect(()=>{
-    console.log(buildingData)
-  },[buildingData]);
 
-
-  const handleBarCodeScanned = ({ data, type }) => {
+  const handleBarCodeScanned = ({ data, type }:{data:any,type:any}) => {
     if (!scannedCodes.has(data)) {
       setScan(false);
       const byteArray = new Uint8Array(data.length);
@@ -36,17 +34,14 @@ export default function TabOneScreen() {
         byteArray[i] = data.charCodeAt(i);
       }
       try {
-
         const decompressedData = pako.inflate(byteArray, { to: 'string' });
         const parsedData = JSON.parse(decompressedData);
         scannedCodes.add(data);
-        const newBuildingData:BuildingData[] = [...buildingData,parsedData.data];
-        setBuildingData(newBuildingData);
+        const newBuildingData:BuildingData[] = [...sharedData,parsedData.data];
+        setSharedData(newBuildingData);
         setPart(part+1);
         Alert.alert(`Read data part ${part+1} of ${parsedData.total}`);
-
       } catch (error) {
-        console.log(error)
         Alert.alert("Not the right QR Code");
       }
     }
@@ -67,7 +62,7 @@ export default function TabOneScreen() {
         scan && (
           <View style={styles.container}>
             <Camera
-              ref={cameraRef}
+              ref={ref=>cameraRef.current = ref}
               style={styles.camera}
               onBarCodeScanned={handleBarCodeScanned}
             />
