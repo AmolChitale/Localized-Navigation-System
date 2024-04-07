@@ -9,11 +9,12 @@ export default function TabOneScreen() {
 
   const {sharedData,setSharedData} = useSharedData();
   const {buildingName, setBuildingName} = useSharedData();
+  const {part,setPart} = useSharedData();
+  const {total,setTotal} = useSharedData();
   const [permission, setPermission] = useState<NullableBoolean>(null);
   const [scan, setScan] = useState(false);
   const [scannedCodes, setScannedCodes] = useState(new Set());
   const cameraRef = useRef<Camera|null>(null);
-  const [part,setPart] = useState<number>(0);
 
   useEffect(() => {
     const getBarCodeScannerPermissions = async () => {
@@ -37,9 +38,11 @@ export default function TabOneScreen() {
         const decompressedData = pako.inflate(byteArray, { to: 'string' });
         const parsedData = JSON.parse(decompressedData);
         scannedCodes.add(data);
-        const newBuildingData:BuildingData[] = [...sharedData,parsedData.data];
+        const newBuildingData:BuildingData[] = [...sharedData,...parsedData.data];
         setSharedData(newBuildingData);
-        setPart(part+1);
+        setBuildingName(parsedData.buildingName);
+        setPart(part + parsedData.part);
+        setTotal(parsedData.total);
         Alert.alert(`Read data part ${part+1} of ${parsedData.total}`);
       } catch (error) {
         Alert.alert("Not the right QR Code");

@@ -1,14 +1,12 @@
-import { StyleSheet } from 'react-native';
-
-import EditScreenInfo from '../../components/EditScreenInfo';
+import { StyleSheet, TextInput } from 'react-native';
 import { Text, View } from '../../components/Themed';
-
 import { useSharedData } from './_layout';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import SearchBar from '@/src/components/SearchBar';
 
 export default function TabTwoScreen() {
 
-  const { sharedData } = useSharedData();
+  const { sharedData, total, part } = useSharedData();
 
   if (sharedData.length == 0) {
     return (
@@ -19,9 +17,20 @@ export default function TabTwoScreen() {
       </View>
     )
   }
+
+  if (part !== total) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.title}>
+          Please Scan all of the parts
+        </Text>
+      </View>
+    )
+  }
+
   return (
     <View style={styles.container}>
-
+      <SearchBar buildingData={sharedData} />
     </View>
   );
 }
@@ -30,15 +39,19 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
   },
   title: {
     fontSize: 20,
     fontWeight: 'bold',
   },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
+  input: {
+    height: 40,
+    fontSize: 16,
+    color: '#ffffff',
+    borderColor: '#ffffff',
+    marginTop: 20,
+    borderWidth: 2,
+    padding: 10,
+    width: '90%',
   },
 });
